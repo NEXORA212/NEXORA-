@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXORA — запись и заявки 24/7 для автосервисов</title>
+<meta name="description" content="Бот-администратор на вашем сайте и в мессенджерах: отвечает за 5 секунд, записывает клиента и присылает заявку вам. Работает ночью и в выходные.">
+<style>
+  :root { --bg:#0d1117; --card:#161b22; --line:#30363d; --text:#e6edf3; --mute:#9aa4b0; --acc:#2f81f7; --good:#3fb950; --bad:#ff7b72; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:1040px; margin:0 auto; padding:0 20px; }
+  header { display:flex; justify-content:space-between; align-items:center; padding:22px 0; }
+  .logo { font-weight:800; letter-spacing:.12em; }
+  h1 { font-size:clamp(32px,5.4vw,56px); line-height:1.1; margin:36px 0 18px; letter-spacing:-.02em; }
+  h2 { font-size:clamp(24px,3.4vw,34px); margin:0 0 20px; letter-spacing:-.01em; }
+  .lead { color:var(--mute); font-size:20px; max-width:680px; margin:0 0 30px; }
+  .btn { display:inline-block; border:0; border-radius:10px; padding:15px 26px; background:var(--acc); color:#fff; font:600 17px system-ui; cursor:pointer; text-decoration:none; }
+  .btn { margin:0 8px 10px 0; }
+  .btn.ghost { background:none; border:1px solid var(--line); color:var(--text); }
+  section { padding:56px 0; border-top:1px solid var(--line); }
+  .grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; }
+  .card h3 { margin:0 0 8px; font-size:19px; }
+  .card p { margin:0; color:var(--mute); font-size:16px; }
+  .num { color:var(--acc); font-weight:800; font-size:14px; letter-spacing:.1em; }
+  .calc { display:grid; gap:28px; grid-template-columns:1fr 1fr; align-items:center; }
+  label { display:block; margin-bottom:16px; color:var(--mute); font-size:15px; }
+  label b { color:var(--text); float:right; }
+  input[type=range] { width:100%; accent-color:var(--acc); margin-top:8px; }
+  .loss { font-size:clamp(36px,6vw,60px); font-weight:800; color:var(--bad); line-height:1.1; }
+  .small { color:var(--mute); font-size:14px; }
+  .price { font-size:34px; font-weight:800; margin:6px 0; }
+  ul { padding-left:20px; margin:12px 0 0; color:var(--mute); font-size:16px; }
+  form.cta { display:grid; gap:12px; max-width:440px; }
+  form.cta input[type=text], form.cta input[type=tel] { padding:14px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--text); font:inherit; }
+  .check { display:flex; gap:10px; align-items:flex-start; font-size:14px; color:var(--mute); margin:0; }
+  #formMsg { min-height:24px; }
+  footer { padding:28px 0 90px; color:var(--mute); font-size:14px; border-top:1px solid var(--line); }
+  @media (max-width:720px) { .calc { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">NEXORA</div>
+    <a class="btn ghost" href="#start">Подключить</a>
+  </header>
+
+  <h1>Клиент написал ночью.<br>Утром он уже записан у конкурента.</h1>
+  <p class="lead">NEXORA — бот-администратор для автосервиса. Отвечает за 5 секунд, называет цены, записывает на удобное время и присылает вам готовую заявку. На сайте и в мессенджерах, без выходных.</p>
+  <button class="btn" onclick="NexoraWidget.open()">Попробовать как клиент</button>
+  <a class="btn ghost" href="#calc">Сколько я теряю?</a>
+
+  <section>
+    <h2>Где утекают деньги</h2>
+    <div class="grid">
+      <div class="card"><h3>Нерабочее время</h3><p>Люди ищут сервис вечером и в выходные. Трубку никто не берёт — они звонят следующему в списке.</p></div>
+      <div class="card"><h3>Занятый мастер</h3><p>Администратор под машиной или с клиентом. Сообщение висит час, заявка остывает.</p></div>
+      <div class="card"><h3>Сломанные каналы</h3><p>Привычные мессенджеры работают с перебоями. Чат на собственном сайте не отключит никто.</p></div>
+    </div>
+  </section>
+
+  <section id="calc">
+    <h2>Посчитайте свои потери</h2>
+    <div class="calc">
+      <div>
+        <label>Обращений в месяц <b id="vLeads"></b><input type="range" id="leads" min="20" max="600" step="10" value="150"></label>
+        <label>Остаются без быстрого ответа <b id="vMiss"></b><input type="range" id="miss" min="5" max="60" step="5" value="25"></label>
+        <label>Из ответивших записываются <b id="vConv"></b><input type="range" id="conv" min="10" max="80" step="5" value="40"></label>
+        <label>Средний чек <b id="vCheck"></b><input type="range" id="check" min="1000" max="30000" step="500" value="6000"></label>
+      </div>
+      <div class="card">
+        <div class="small">Недополученная выручка в месяц</div>
+        <div class="loss" id="loss"></div>
+        <p class="small" id="lossNote"></p>
+        <p class="small">Это оценка по вашим цифрам, а не обещание. Точные данные покажет двухнедельный тест.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Как это работает</h2>
+    <div class="grid">
+      <div class="card"><div class="num">ШАГ 1</div><h3>Настройка за 2 дня</h3><p>Вносим ваши услуги, цены, график и ответы на частые вопросы.</p></div>
+      <div class="card"><div class="num">ШАГ 2</div><h3>Одна строка на сайт</h3><p>Виджет появляется на сайте. Тот же бот подключается к мессенджеру.</p></div>
+      <div class="card"><div class="num">ШАГ 3</div><h3>Заявки приходят вам</h3><p>Имя, телефон, услуга, день и время — сообщением и в таблицу.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Цена</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Тест</h3><div class="price">0 ₽</div><p>14 дней. Считаем заявки, которые принёс бот.</p>
+        <ul><li>Виджет на сайт</li><li>Уведомления о заявках</li><li>Отчёт по итогам</li></ul>
+      </div>
+      <div class="card" style="border-color:var(--acc)">
+        <h3>Работа</h3><div class="price">6 900 ₽<span class="small"> / мес</span></div><p>Если тест принёс заявки. Без договора на год.</p>
+        <ul><li>Сайт + мессенджер</li><li>Правки цен и услуг за сутки</li><li>Ежемесячный отчёт</li></ul>
+      </div>
+      <div class="card">
+        <h3>Под ключ</h3><div class="price">от 25 000 ₽</div><p>Разовая доработка под ваши процессы.</p>
+        <ul><li>Передача заявок в CRM</li><li>Свои сценарии диалога</li><li>Напоминания клиентам</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="start">
+    <h2>Запустить тест</h2>
+    <p class="lead">Оставьте телефон — перезвоним, за 15 минут разберём ваш поток заявок.</p>
+    <form class="cta" id="cta">
+      <input type="text" name="name" placeholder="Имя" required maxlength="60" aria-label="Имя">
+      <input type="tel" name="phone" placeholder="+7 912 345-67-89" required aria-label="Телефон">
+      <label class="check"><input type="checkbox" required> Согласен на обработку имени и телефона для связи со мной</label>
+      <button class="btn" type="submit">Хочу тест на 14 дней</button>
+      <div id="formMsg" class="small" role="status"></div>
+    </form>
+  </section>
+
+  <footer>NEXORA — помощь предприятиям. Демо-бот в углу экрана настроен на вымышленный автосервис.</footer>
+</div>
+
+<script>
+  var $ = function (id) { return document.getElementById(id); };
+  var rub = function (n) { return Math.round(n).toLocaleString("ru-RU") + " ₽"; };
+  function recalc() {
+    var leads = +$("leads").value, miss = +$("miss").value, conv = +$("conv").value, check = +$("check").value;
+    var lost = leads * miss / 100 * conv / 100;
+    $("vLeads").textContent = leads;
+    $("vMiss").textContent = miss + "%";
+    $("vConv").textContent = conv + "%";
+    $("vCheck").textContent = rub(check);
+    $("loss").textContent = rub(lost * check);
+    $("lossNote").textContent = "Около " + Math.round(lost) + " клиентов в месяц уходят, не дождавшись ответа. За год — " + rub(lost * check * 12) + ".";
+  }
+  ["leads", "miss", "conv", "check"].forEach(function (id) { $(id).oninput = recalc; });
+  recalc();
+
+  $("cta").onsubmit = function (e) {
+    e.preventDefault();
+    var form = e.target, msg = $("formMsg");
+    fetch("/api/lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: form.name.value, phone: form.phone.value }),
+    }).then(function (r) {
+      if (r.ok) { form.reset(); msg.textContent = "Заявка принята. Перезвоним в рабочее время."; }
+      else { msg.textContent = "Проверьте номер телефона."; }
+    }).catch(function () { msg.textContent = "Нет связи. Попробуйте ещё раз."; });
+  };
+</script>
+<script src="/widget.js" data-title="Запись онлайн"></script>
+</body>
+</html>
